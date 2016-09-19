@@ -61,6 +61,9 @@ Library
                      , stm
                      , streaming-commons        >= 0.1.11
 
+  if impl(ghcjs)
+      Build-depends: ghcjs-base
+
   ghc-options:     -Wall
 
 test-suite test

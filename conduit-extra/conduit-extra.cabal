@@ -58,6 +58,9 @@ Library
                      , unliftio-core
                      , typed-process            >= 0.2
 
+  if impl(ghcjs)
+      Build-depends: ghcjs-base
+
   ghc-options:     -Wall
 
 test-suite test

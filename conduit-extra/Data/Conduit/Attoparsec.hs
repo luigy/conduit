@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns       #-}
+{-# LANGUAGE CPP                #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts   #-}
 {-# LANGUAGE RankNTypes         #-}
@@ -39,6 +40,9 @@ import qualified Data.Attoparsec.Text
 import qualified Data.Attoparsec.Types      as A
 import           Data.Conduit
 import Control.Monad.Trans.Resource (MonadThrow, throwM)
+#ifdef __GHCJS__
+import qualified Data.JSString.Raw as JSS
+#endif
 
 -- | The context and message from a 'A.Fail' value.
 data ParseError = ParseError
@@ -105,8 +109,13 @@ instance AttoparsecInput T.Text where
         f (Position l c o) ch
           | ch == '\n' = Position (l + 1) 0 (o + 1)
           | otherwise = Position l (c + 1) (o + 1)
+#ifndef __GHCJS__
     stripFromEnd (TI.Text arr1 off1 len1) (TI.Text _ _ len2) =
         TI.text arr1 off1 (len1 - len2)
+#else
+    stripFromEnd (TI.Text str1) (TI.Text str2) =
+      TI.Text $ JSS.rawDropEnd (JSS.rawLength str1 - JSS.rawLength str2) str1
+#endif
 
 -- | Convert an Attoparsec 'A.Parser' into a 'Sink'. The parser will
 -- be streamed bytes until it returns 'A.Done' or 'A.Fail'.
